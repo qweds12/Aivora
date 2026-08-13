@@ -61,5 +61,5 @@ app.post("/api/checkout",(req,res)=>{
   res.json({mode:"stripe-ready",message:"مفتاح Stripe موجود. اربط إنشاء Checkout Session وWebhook في مرحلة الإنتاج."});
 });
 
-app.get("*",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));
-app.listen(PORT,()=>console.log(`Aivora AI running on http://localhost:${PORT}`));
+app.get(/.*/, (req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));
+module.exports = app;
