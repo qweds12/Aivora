@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-
+import supabase from "./supabase.js";
 dotenv.config();
 const app=express(), PORT=process.env.PORT||3000;
 const __dirname=path.dirname(fileURLToPath(import.meta.url));
