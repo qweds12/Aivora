@@ -2,39 +2,56 @@ export default async function handler(req, res) {
 
   if (req.method !== "POST") {
     return res.status(405).json({
-      error: "Method not allowed"
+      result: "الطريقة غير مسموحة"
     });
   }
 
 
-  const { input } = req.body || {};
+  try {
+
+    const body = req.body || {};
+    const input = body.input;
 
 
-  if (!input || !input.trim()) {
-    return res.status(400).json({
-      error: "اكتب طلبك أولاً"
-    });
-  }
+    if (!input || !input.trim()) {
+
+      return res.status(200).json({
+        result: "اكتب طلبك أولاً"
+      });
+
+    }
 
 
-  // رد تجريبي حاليا
-  // لاحقا نربطه بالذكاء الاصطناعي الحقيقي
-
-  const result = `
-فكرة تطبيق ذكاء اصطناعي:
+    const result = 
+`فكرة تطبيق ذكاء اصطناعي:
 
 ${input}
 
 الاسم المقترح:
-Aivora AI
+Aivora AI 🚀
 
 الوصف:
-تطبيق يساعد المستخدمين على إنشاء الأفكار والمحتوى باستخدام الذكاء الاصطناعي.
+منصة ذكاء اصطناعي تساعد المستخدمين على إنشاء الأفكار والمحتوى والتطبيقات.
+
+المميزات:
+- توليد أفكار جديدة
+- كتابة محتوى
+- إنشاء خطط مشاريع
+- مساعدة في تطوير التطبيقات
 `;
 
 
-  return res.status(200).json({
-    result: result
-  });
+    return res.status(200).json({
+      result: result
+    });
+
+
+  } catch(error) {
+
+    return res.status(500).json({
+      result: "حدث خطأ في الخادم"
+    });
+
+  }
 
 }
