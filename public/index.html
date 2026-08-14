@@ -198,15 +198,74 @@ let data=await response.json();
 
 
 
-if(typeof data.result==="object"){
+let output = data.result;
 
-document.getElementById("result").innerText=
-JSON.stringify(data.result,null,2);
+if (typeof output === "string") {
 
-}else{
+document.getElementById("result").innerText = output;
 
-document.getElementById("result").innerText=
-data.result;
+} else {
+
+let text = "";
+
+if(output.title){
+text += output.title + "\n\n";
+}
+
+if(output.sections){
+
+output.sections.forEach(section=>{
+
+if(section.title){
+text += "🔹 " + section.title + "\n";
+}
+
+if(section.text){
+text += section.text + "\n\n";
+}
+
+});
+
+}
+
+document.getElementById("result").innerText = text;
+
+}
+let output = data.result;
+
+if (typeof output === "string") {
+
+document.getElementById("result").innerText = output;
+
+} else {
+
+let text = "";
+
+if(output.title){
+text += output.title + "\n\n";
+}
+
+
+if(output.sections){
+
+output.sections.forEach(section=>{
+
+if(section.title){
+text += "🔹 " + section.title + "\n";
+}
+
+if(section.text){
+text += section.text + "\n\n";
+}
+
+});
+
+}
+
+
+document.getElementById("result").innerText = text;
+
+}
 
 }
 
