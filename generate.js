@@ -1,57 +1,54 @@
 export default async function handler(req, res) {
 
-  if (req.method !== "POST") {
-    return res.status(405).json({
-      result: "الطريقة غير مسموحة"
-    });
-  }
+if(req.method !== "POST"){
+return res.status(405).json({
+error:"Method not allowed"
+});
+}
 
 
-  try {
-
-    const body = req.body || {};
-    const input = body.input;
+const {input} = req.body || {};
 
 
-    if (!input || !input.trim()) {
+if(!input || !input.trim()){
 
-      return res.status(200).json({
-        result: "اكتب طلبك أولاً"
-      });
+return res.status(400).json({
+error:"اكتب طلبك أولاً"
+});
 
-    }
-
-
-    const result = 
-`فكرة تطبيق ذكاء اصطناعي:
-
-${input}
-
-الاسم المقترح:
-Aivora AI 🚀
-
-الوصف:
-منصة ذكاء اصطناعي تساعد المستخدمين على إنشاء الأفكار والمحتوى والتطبيقات.
-
-المميزات:
-- توليد أفكار جديدة
-- كتابة محتوى
-- إنشاء خطط مشاريع
-- مساعدة في تطوير التطبيقات
-`;
+}
 
 
-    return res.status(200).json({
-      result: result
-    });
+
+const result = {
+
+title:"فكرة تطبيق ذكاء اصطناعي",
+
+sections:[
+
+{
+title:"تحليل الطلب",
+text:`${input}`
+},
+
+{
+title:"الفكرة",
+text:"تطبيق ذكاء اصطناعي يساعد المستخدم على إنشاء الأفكار والمحتوى بسرعة."
+},
+
+{
+title:"المميزات",
+text:"إنشاء أفكار، كتابة محتوى، تحسين البرومبتات، واقتراح حلول ذكية."
+}
+
+]
+
+};
 
 
-  } catch(error) {
+return res.status(200).json({
+result:result
+});
 
-    return res.status(500).json({
-      result: "حدث خطأ في الخادم"
-    });
-
-  }
 
 }
