@@ -3,542 +3,338 @@ import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import { createClient } from "@supabase/supabase-js";
 
 dotenv.config();
 
 const app = express();
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const publicDir = path.join(__dirname, "public");
 
 app.use(cors());
-
-app.use(express.json({
-  limit: "2mb"
-}));
-
-app.use(
-  express.static(
-    path.join(__dirname, "public")
-  )
-);
-
-
-// ===============================
-// AIVORA AI TOOLS
-// ===============================
+app.use(express.json({ limit: "2mb" }));
+app.use(express.static(publicDir));
 
 const tools = {
-
-  video: {
-    name: "Video Studio",
-    cost: 20
-  },
-
-  image: {
-    name: "Image Prompt Studio",
-    cost: 5
-  },
-
-  social: {
-    name: "Social Studio",
-    cost: 3
-  },
-
-  prompt: {
-    name: "Prompt Builder",
-    cost: 2
-  },
-
-  cv: {
-    name: "CV Builder",
-    cost: 5
-  },
-
-  idea: {
-    name: "Business Ideas",
-    cost: 3
-  }
-
+  video: { name: "Video Studio", cost: 20 },
+  image: { name: "Image Prompt Studio", cost: 5 },
+  social: { name: "Social Studio", cost: 3 },
+  prompt: { name: "Prompt Builder", cost: 2 },
+  cv: { name: "CV Builder", cost: 5 },
+  idea: { name: "Business Ideas", cost: 3 }
 };
 
+const supabaseConfigured = Boolean(
+  process.env.SUPABASE_URL && process.env.SUPABASE_KEY
+);
 
-// ===============================
-// DEMO RESULT
-// ===============================
+const supabase = supabaseConfigured
+  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    })
+  : null;
 
-function localResult(tool, input) {
-
-  return {
-
-    title:
-      tools[tool]?.name ||
-      "Aivora AI",
-
-    sections: [
-
-      {
-        title: "تحليل الطلب",
-
-        text:
-          `تم تحليل طلبك: ${input}`
-      },
-
-      {
-
-        title: "النتيجة",
-
-        text:
-          "هذه نتيجة تجريبية. عند تشغيل Gemini سيتم إنشاء إجابة ذكاء اصطناعي حقيقية."
-      },
-
-      {
-
-        title: "خطوات مقترحة",
-
-        text:
-          "حدد الجمهور والهدف والأسلوب، ثم راجع النتيجة قبل النشر."
-      }
-
-    ]
-
-  };
-
+function userClient(token) {
+  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
+    auth: { autoRefreshToken: false, persistSession: false },
+    global: { headers: { Authorization: `Bearer ${token}` } }
+  });
 }
 
+async function authContext(req) {
+  if (!supabaseConfigured) return null;
 
-// ===============================
-// HEALTH
-// ===============================
+  const header = req.headers.authorization || "";
+  if (!header.startsWith("Bearer ")) return null;
 
-app.get(
-  "/api/health",
-  (req, res) => {
+  const token = header.slice(7).trim();
+  if (!token) return null;
 
-    res.json({
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data?.user) return null;
 
-      ok: true,
+  return {
+    user: data.user,
+    client: userClient(token)
+  };
+}
 
-      service:
-        "Aivora AI",
+async function requireAuth(req, res) {
+  const ctx = await authContext(req);
+  if (!ctx) {
+    res.status(401).json({ error: "يجب تسجيل الدخول أولاً" });
+    return null;
+  }
+  return ctx;
+}
 
-      version:
-        "3.0 Gemini",
+function demoResult(tool, input) {
+  return {
+    title: tools[tool]?.name || "Aivora AI",
+    sections: [
+      { title: "تحليل الطلب", text: `تم تحليل طلبك: ${input}` },
+      {
+        title: "النتيجة",
+        text: "هذه نتيجة تجريبية. أضف GEMINI_API_KEY لتفعيل الإجابة الحقيقية."
+      },
+      {
+        title: "خطوات مقترحة",
+        text: "حدد الجمهور والهدف والأسلوب، ثم راجع النتيجة قبل النشر."
+      }
+    ]
+  };
+}
 
-      gemini:
-        Boolean(
-          process.env.GEMINI_API_KEY
-        )
+app.get("/api/config", (req, res) => {
+  res.json({
+    supabaseUrl: process.env.SUPABASE_URL || "",
+    supabaseKey: process.env.SUPABASE_KEY || "",
+    authEnabled: supabaseConfigured
+  });
+});
 
+app.get("/api/health", (req, res) => {
+  res.json({
+    ok: true,
+    service: "Aivora AI",
+    version: "2.0",
+    gemini: Boolean(process.env.GEMINI_API_KEY),
+    supabase: supabaseConfigured
+  });
+});
+
+app.get("/api/tools", (req, res) => res.json(tools));
+
+app.get("/api/me", async (req, res) => {
+  const ctx = await authContext(req);
+  if (!ctx) return res.json({ authenticated: false });
+
+  const { data: profile, error } = await ctx.client
+    .from("profiles")
+    .select("id,email,display_name,credits")
+    .eq("id", ctx.user.id)
+    .maybeSingle();
+
+  if (error) {
+    return res.status(500).json({
+      error: "تعذر قراءة الحساب",
+      detail: error.message
     });
-
   }
-);
 
+  res.json({
+    authenticated: true,
+    user: {
+      id: ctx.user.id,
+      email: ctx.user.email,
+      displayName:
+        profile?.display_name ||
+        ctx.user.user_metadata?.display_name ||
+        ""
+    },
+    credits: Number(profile?.credits ?? 0)
+  });
+});
 
-// ===============================
-// TOOLS
-// ===============================
+app.get("/api/projects", async (req, res) => {
+  const ctx = await requireAuth(req, res);
+  if (!ctx) return;
 
-app.get(
-  "/api/tools",
-  (req, res) => {
+  const { data, error } = await ctx.client
+    .from("projects")
+    .select("id,tool,input,result,credits_used,created_at")
+    .order("created_at", { ascending: false })
+    .limit(50);
 
-    res.json(tools);
-
+  if (error) {
+    return res.status(500).json({
+      error: "تعذر تحميل المشاريع",
+      detail: error.message
+    });
   }
-);
 
+  res.json({ projects: data || [] });
+});
 
-// ===============================
-// GEMINI GENERATOR
-// ===============================
+app.delete("/api/projects/:id", async (req, res) => {
+  const ctx = await requireAuth(req, res);
+  if (!ctx) return;
 
-app.post(
-  "/api/generate",
-  async (req, res) => {
+  const { error } = await ctx.client
+    .from("projects")
+    .delete()
+    .eq("id", req.params.id);
 
-    const {
+  if (error) {
+    return res.status(500).json({
+      error: "تعذر حذف المشروع",
+      detail: error.message
+    });
+  }
 
-      tool = "prompt",
+  res.json({ ok: true });
+});
 
-      input = "",
+async function consumeCredits(client, cost) {
+  const { data, error } = await client.rpc("consume_credits", {
+    p_cost: cost
+  });
 
-      language = "ar"
+  if (error) throw error;
 
-    } = req.body || {};
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) throw new Error("تعذر خصم Credits");
 
+  return Number(row.remaining_credits ?? 0);
+}
 
-    // ---------------------------
-    // Validate input
-    // ---------------------------
+async function refundCredits(client, cost) {
+  try {
+    await client.rpc("refund_credits", { p_cost: cost });
+  } catch (e) {
+    console.error("Credit refund error:", e.message);
+  }
+}
 
-    if (
-      typeof input !== "string" ||
-      !input.trim()
-    ) {
+app.post("/api/generate", async (req, res) => {
+  const {
+    tool = "prompt",
+    input = "",
+    language = "ar"
+  } = req.body || {};
 
-      return res.status(400).json({
+  if (typeof input !== "string" || !input.trim()) {
+    return res.status(400).json({ error: "اكتب طلبك أولاً" });
+  }
 
-        error:
-          "اكتب طلبك أولاً"
+  const cost = tools[tool]?.cost || 2;
+  const ctx = await authContext(req);
+  let remainingCredits = null;
 
-      });
-
-    }
-
-
-    // ---------------------------
-    // Tool cost
-    // ---------------------------
-
-    const cost =
-      tools[tool]?.cost || 2;
-
-
-    // ---------------------------
-    // Demo mode
-    // ---------------------------
-
-    if (
-      !process.env.GEMINI_API_KEY
-    ) {
-
-      return res.json({
-
-        mode: "demo",
-
-        credits: cost,
-
-        result:
-          localResult(
-            tool,
-            input
-          )
-
-      });
-
-    }
-
-
+  if (ctx) {
     try {
+      remainingCredits = await consumeCredits(ctx.client, cost);
+    } catch (e) {
+      return res.status(402).json({
+        error: "رصيد Credits غير كافٍ",
+        detail: e.message
+      });
+    }
+  }
 
-      // -------------------------
-      // Gemini model
-      // -------------------------
+  if (!process.env.GEMINI_API_KEY) {
+    return res.json({
+      mode: "demo",
+      credits: cost,
+      remainingCredits,
+      result: demoResult(tool, input)
+    });
+  }
 
-      const model =
-        process.env.GEMINI_MODEL ||
-        "gemini-3.5-flash";
+  try {
+    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
-
-      // -------------------------
-      // Prompt
-      // -------------------------
-
-      const prompt = `
-
+    const prompt = `
 أنت Aivora AI، مساعد ذكاء اصطناعي احترافي.
-
-اسم الأداة:
-${tools[tool]?.name || tool}
-
-لغة الإجابة:
-${language}
+الأداة: ${tools[tool]?.name || tool}
+لغة الإجابة: ${language}
 
 طلب المستخدم:
 ${input}
 
-المطلوب:
-
-1. افهم طلب المستخدم بدقة.
-2. قدم نتيجة عملية ومفيدة.
-3. لا تقل إنك نسخة تجريبية.
-4. لا تذكر مفاتيح API.
-5. لا تشرح طريقة عمل الخادم.
-6. اجعل الإجابة منظمة وسهلة القراءة.
-7. استخدم اللغة التي طلبها المستخدم.
-
+أعطِ نتيجة عملية ومفيدة. استخدم اللغة المطلوبة.
+نظّم الإجابة بعناوين ونقاط عند الحاجة.
 `;
 
-
-      // -------------------------
-      // Gemini API
-      // -------------------------
-
-      const url =
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-
-
-      const response =
-        await fetch(
-          url,
-          {
-
-            method: "POST",
-
-            headers: {
-
-              "Content-Type":
-                "application/json",
-
-              "x-goog-api-key":
-                process.env.GEMINI_API_KEY
-
-            },
-
-            body:
-              JSON.stringify({
-
-                contents: [
-
-                  {
-
-                    role: "user",
-
-                    parts: [
-
-                      {
-                        text: prompt
-                      }
-
-                    ]
-
-                  }
-
-                ],
-
-                generationConfig: {
-
-                  temperature: 0.7,
-
-                  maxOutputTokens:
-                    2048
-
-                }
-
-              })
-
-          }
-        );
-
-
-      // -------------------------
-      // Gemini error
-      // -------------------------
-
-      if (!response.ok) {
-
-        const errorText =
-          await response.text();
-
-        throw new Error(
-          `Gemini API ${response.status}: ${errorText}`
-        );
-
-      }
-
-
-      // -------------------------
-      // Response JSON
-      // -------------------------
-
-      const data =
-        await response.json();
-
-
-      // -------------------------
-      // Extract text
-      // -------------------------
-
-      const text =
-        data
-          ?.candidates?.[0]
-          ?.content?.parts
-          ?.map(
-            part => part.text || ""
-          )
-          .join("")
-          .trim();
-
-
-      if (!text) {
-
-        throw new Error(
-          "Gemini returned an empty response"
-        );
-
-      }
-
-
-      // -------------------------
-      // Final response
-      // -------------------------
-
-      return res.json({
-
-        mode: "gemini",
-
-        model,
-
-        credits: cost,
-
-        result: {
-
-          title:
-            tools[tool]?.name ||
-            "Aivora AI",
-
-          sections: [
-
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": process.env.GEMINI_API_KEY
+        },
+        body: JSON.stringify({
+          contents: [
             {
-
-              title:
-                "Aivora AI",
-
-              text
-
+              role: "user",
+              parts: [{ text: prompt }]
             }
-
-          ]
-
-        }
-
-      });
-
-
-    } catch (error) {
-
-      console.error(
-        "Gemini error:",
-        error
-      );
-
-
-      return res.status(502).json({
-
-        error:
-          "تعذر الاتصال بمحرك Gemini حالياً",
-
-        detail:
-          error.message
-
-      });
-
-    }
-
-  }
-);
-
-
-// ===============================
-// CHECKOUT
-// ===============================
-
-app.post(
-  "/api/checkout",
-  (req, res) => {
-
-    if (
-      !process.env.STRIPE_SECRET_KEY
-    ) {
-
-      return res.json({
-
-        mode: "demo",
-
-        message:
-          "الدفع غير مفعل حالياً."
-
-      });
-
-    }
-
-
-    return res.json({
-
-      mode:
-        "stripe-ready",
-
-      message:
-        "Stripe جاهز للربط. سيتم إنشاء Checkout Session في المرحلة القادمة."
-
-    });
-
-  }
-);
-
-
-// ===============================
-// FRONTEND FALLBACK
-// ===============================
-//
-// هذا الأسلوب متوافق مع Express 5
-// ولا يستخدم app.get("*")
-// ===============================
-
-app.use(
-  (req, res, next) => {
-
-    if (
-      req.method !== "GET"
-    ) {
-
-      return next();
-
-    }
-
-
-    // لا نعيد index.html
-    // لمسارات API غير الموجودة
-
-    if (
-      req.path.startsWith(
-        "/api/"
-      )
-    ) {
-
-      return res.status(404).json({
-
-        error:
-          "API endpoint not found"
-
-      });
-
-    }
-
-
-    return res.sendFile(
-
-      path.join(
-        __dirname,
-        "public",
-        "index.html"
-      )
-
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2048
+          }
+        })
+      }
     );
 
-  }
-);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Gemini ${response.status}: ${errorText}`);
+    }
 
+    const data = await response.json();
 
-// ===============================
-// ERROR HANDLER
-// ===============================
+    const text =
+      data?.candidates?.[0]?.content?.parts
+        ?.map((p) => p.text || "")
+        .join("")
+        .trim() || "";
 
-app.use(
-  (err, req, res, next) => {
+    if (!text) throw new Error("Gemini returned an empty response");
 
-    console.error(err);
+    const result = {
+      title: tools[tool]?.name || "Aivora AI",
+      sections: [{ title: "Aivora AI", text }]
+    };
 
-    res.status(500).json({
+    if (ctx) {
+      const { error } = await ctx.client.from("projects").insert({
+        user_id: ctx.user.id,
+        tool,
+        input,
+        result,
+        credits_used: cost
+      });
 
-      error:
-        "حدث خطأ داخلي في الخادم"
+      if (error) {
+        console.error("Project save error:", error.message);
+      }
+    }
 
+    res.json({
+      mode: "gemini",
+      model,
+      credits: cost,
+      remainingCredits,
+      result
     });
+  } catch (e) {
+    if (ctx) await refundCredits(ctx.client, cost);
 
+    console.error("Gemini error:", e);
+
+    res.status(502).json({
+      error: "تعذر الاتصال بمحرك Gemini حالياً",
+      detail: e.message
+    });
   }
-);
+});
 
+app.get("/api/auth.js", (req, res) => {
+  res.sendFile(path.join(publicDir, "auth.js"));
+});
+
+app.get("/api/checkout", (req, res) => {
+  res.json({
+    mode: "coming-soon",
+    message: "نظام الدفع سيتم ربطه في المرحلة التالية."
+  });
+});
+
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(publicDir, "index.html"));
+});
 
 export default app;
