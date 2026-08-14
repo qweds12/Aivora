@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -8,100 +10,100 @@
 
 <style>
 
-*{
-box-sizing:border-box;
-}
-
 body{
+
 margin:0;
-padding:15px;
+padding:20px;
 background:#0d172d;
 color:white;
 font-family:Arial,sans-serif;
 text-align:center;
+
 }
+
+
+h1{
+
+font-size:55px;
+color:#38bdf8;
+margin-top:30px;
+
+}
+
+
+h2{
+
+font-size:35px;
+line-height:1.8;
+margin:40px 0;
+
+}
+
 
 .container{
-width:100%;
+
 max-width:600px;
 margin:auto;
+
 }
 
-h1{
-font-size:38px;
-color:#38bdf8;
-margin:20px 0;
-}
-
-h2{
-font-size:24px;
-line-height:1.6;
-margin:25px 0;
-}
 
 textarea{
-width:100%;
-height:220px;
-border-radius:25px;
+
+width:90%;
+height:250px;
+border-radius:30px;
 border:none;
-padding:20px;
-font-size:20px;
+padding:25px;
+font-size:25px;
+text-align:right;
 resize:none;
-direction:rtl;
+
 }
 
+
 button{
-margin-top:25px;
+
+margin-top:40px;
 background:#38bdf8;
-color:#001;
 border:none;
 border-radius:50px;
-padding:18px 60px;
-font-size:24px;
+padding:25px 80px;
+font-size:30px;
 cursor:pointer;
+
 }
 
-button:active{
-transform:scale(.97);
-}
 
 #result{
-margin-top:35px;
+
+margin-top:50px;
 background:#1e293b;
-border-radius:25px;
-padding:25px;
-font-size:20px;
-min-height:100px;
+border-radius:30px;
+padding:30px;
+font-size:25px;
+line-height:1.8;
+min-height:80px;
+text-align:right;
 word-wrap:break-word;
-overflow-wrap:anywhere;
+
+}
+
+
+#result h3{
+
+color:#38bdf8;
+text-align:center;
+
 }
 
 
-@media(max-width:500px){
+#result h4{
 
-h1{
-font-size:32px;
-}
-
-h2{
-font-size:21px;
-}
-
-textarea{
-height:180px;
-font-size:18px;
-}
-
-button{
-font-size:22px;
-padding:16px 50px;
-}
-
-#result{
-font-size:18px;
-}
+color:#38bdf8;
 
 }
+
 
 </style>
 
@@ -110,10 +112,13 @@ font-size:18px;
 
 <body>
 
+
 <div class="container">
 
 
-<h1>Aivora AI 🚀</h1>
+<h1>
+Aivora AI 🚀
+</h1>
 
 
 <h2>
@@ -122,7 +127,15 @@ font-size:18px;
 </h2>
 
 
-<textarea id="input" placeholder="اكتب طلبك هنا..."></textarea>
+
+<textarea 
+id="input"
+placeholder="اكتب طلبك هنا...">
+</textarea>
+
+
+
+<br>
 
 
 <button onclick="generate()">
@@ -130,8 +143,11 @@ font-size:18px;
 </button>
 
 
+
 <div id="result">
+
 النتيجة ستظهر هنا
+
 </div>
 
 
@@ -141,9 +157,11 @@ font-size:18px;
 
 <script>
 
+
 async function generate(){
 
-let input=document.getElementById("input").value.trim();
+
+let input=document.getElementById("input").value;
 
 let result=document.getElementById("result");
 
@@ -156,55 +174,110 @@ return;
 }
 
 
+
 result.innerHTML="جاري المعالجة...";
+
 
 
 try{
 
 
-let response=await fetch("/api/generate",{
+let response = await fetch("/api/generate",{
 
 method:"POST",
 
 headers:{
+
 "Content-Type":"application/json"
+
 },
 
 body:JSON.stringify({
+
 input:input
+
 })
 
 });
 
 
-let data=await response.json();
+
+let data = await response.json();
 
 
-if(typeof data.result==="object"){
 
-result.innerHTML=JSON.stringify(data.result,null,2);
+let output=data.result || data;
+
+
+
+if(typeof output==="object"){
+
+
+let html="";
+
+
+
+if(output.title){
+
+html += "<h3>"+output.title+"</h3>";
+
+}
+
+
+
+if(output.sections){
+
+
+output.sections.forEach(section=>{
+
+
+html += "<h4>"+(section.title || "")+"</h4>";
+
+html += "<p>"+(section.text || "")+"</p>";
+
+
+
+});
+
+
+}
+
+
+
+result.innerHTML=html;
+
+
 
 }else{
 
-result.innerHTML=data.result || "لم يتم إنشاء نتيجة";
+
+result.innerHTML=output;
+
+
 
 }
 
 
-}
 
+}
 
 catch(error){
 
-result.innerHTML="حدث خطأ في الاتصال";
+
+result.innerHTML="حدث خطأ: "+error;
+
 
 }
 
 
+
 }
+
 
 </script>
 
 
+
 </body>
+
 </html>
