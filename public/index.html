@@ -15,7 +15,7 @@ box-sizing:border-box;
 
 body{
 margin:0;
-padding:10px;
+padding:12px;
 background:#0d172d;
 color:white;
 font-family:Arial,sans-serif;
@@ -25,54 +25,82 @@ overflow-x:hidden;
 
 .container{
 width:100%;
-max-width:500px;
+max-width:520px;
 margin:auto;
 }
 
 h1{
-font-size:30px;
+font-size:34px;
 color:#38bdf8;
 margin:15px 0;
 }
 
 h2{
-font-size:21px;
-line-height:1.5;
+font-size:22px;
+line-height:1.6;
 margin:15px 0 25px;
 }
 
 textarea{
+
 width:100%;
 height:160px;
-border-radius:20px;
+
+border-radius:22px;
 border:none;
-padding:15px;
+
+padding:18px;
+
 font-size:18px;
+
 resize:none;
+
 text-align:right;
+
 }
+
 
 button{
+
 margin-top:20px;
+
 background:#38bdf8;
+
 border:none;
-border-radius:40px;
+
+border-radius:50px;
+
 padding:15px 55px;
+
 font-size:22px;
+
 cursor:pointer;
+
 }
 
+
 #result{
+
 margin-top:25px;
+
 background:#1e293b;
-border-radius:20px;
+
+border-radius:22px;
+
 padding:20px;
+
 font-size:17px;
-line-height:1.7;
-min-height:80px;
+
+line-height:1.8;
+
+min-height:100px;
+
 white-space:pre-wrap;
+
 word-break:break-word;
+
 }
+
 
 </style>
 
@@ -81,9 +109,12 @@ word-break:break-word;
 
 <body>
 
+
 <div class="container">
 
-<h1>Aivora AI 🚀</h1>
+
+<h1>🚀 Aivora AI</h1>
+
 
 <h2>
 منصة الذكاء الاصطناعي لصناعة<br>
@@ -93,8 +124,6 @@ word-break:break-word;
 
 <textarea id="input" placeholder="اكتب طلبك هنا..."></textarea>
 
-
-<br>
 
 <button onclick="generate()">
 إنشاء
@@ -109,107 +138,77 @@ word-break:break-word;
 </div>
 
 
+
 <script>
+
 
 async function generate(){
 
-let input = document.getElementById("input").value;
 
-let result = document.getElementById("result");
+const input =
+document.getElementById("input").value;
+
+
+const result =
+document.getElementById("result");
+
 
 
 if(!input.trim()){
 
-result.innerText="اكتب طلبك أولاً";
+result.innerText =
+"اكتب طلبك أولاً";
+
 return;
 
 }
 
 
-result.innerText="جاري المعالجة...";
+
+result.innerText =
+"جاري المعالجة...";
+
 
 
 try{
 
 
-let response = await fetch("/api/generate",{
+const response = await fetch("/api/generate",{
 
 method:"POST",
 
 headers:{
+
 "Content-Type":"application/json"
+
 },
 
 body:JSON.stringify({
+
 input:input
+
 })
 
 });
 
 
-let data = await response.json();
+
+const data = await response.json();
 
 
-if(data.error){
 
-result.innerText=data.error;
-return;
+if(data.result){
 
-}
+result.innerText = data.result;
 
+}else if(data.error){
 
-// معالجة كل أنواع الردود
+result.innerText = data.error;
 
-if(typeof data.result === "string"){
+}else{
 
-result.innerText=data.result;
-
-}
-
-else if(typeof data.result === "object"){
-
-let text="";
-
-
-if(data.result.title){
-
-text += data.result.title + "\n\n";
-
-}
-
-
-if(data.result.sections){
-
-data.result.sections.forEach(section=>{
-
-
-if(section.title){
-
-text += "🔹 " + section.title + "\n";
-
-}
-
-
-if(section.text){
-
-text += section.text + "\n\n";
-
-}
-
-
-});
-
-}
-
-
-result.innerText = text || JSON.stringify(data.result,null,2);
-
-
-}
-
-else{
-
-result.innerText="لا توجد نتيجة";
+result.innerText =
+"لا يوجد رد";
 
 }
 
@@ -218,7 +217,8 @@ result.innerText="لا توجد نتيجة";
 }catch(error){
 
 
-result.innerText="حدث خطأ: " + error.message;
+result.innerText =
+"حدث خطأ: " + error.message;
 
 
 }
