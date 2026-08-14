@@ -23,13 +23,11 @@ text-align:center;
 overflow-x:hidden;
 }
 
-
 .container{
 width:100%;
 max-width:600px;
 margin:auto;
 }
-
 
 h1{
 font-size:38px;
@@ -37,74 +35,45 @@ color:#38bdf8;
 margin:20px 0;
 }
 
-
 h2{
 font-size:26px;
 line-height:1.6;
 margin:20px 0 35px;
 }
 
-
 textarea{
-
 width:100%;
 height:220px;
-
 border-radius:25px;
 border:none;
-
 padding:20px;
-
 font-size:22px;
-
 resize:none;
-
 text-align:right;
-
 }
-
 
 button{
-
 margin-top:30px;
-
 background:#38bdf8;
-
 border:none;
-
 border-radius:50px;
-
 padding:18px 70px;
-
 font-size:25px;
-
 cursor:pointer;
-
 }
-
 
 #result{
-
 margin-top:35px;
-
 background:#1e293b;
-
 border-radius:25px;
-
 padding:25px;
-
 font-size:20px;
-
 line-height:1.8;
-
 min-height:100px;
-
 white-space:pre-wrap;
-
 word-break:break-word;
-
+overflow-wrap:break-word;
 }
-
 
 </style>
 
@@ -113,12 +82,9 @@ word-break:break-word;
 
 <body>
 
-
 <div class="container">
 
-
 <h1>Aivora AI 🚀</h1>
-
 
 <h2>
 منصة الذكاء الاصطناعي لصناعة<br>
@@ -130,7 +96,6 @@ word-break:break-word;
 
 
 <br>
-
 
 <button onclick="generate()">
 إنشاء
@@ -145,127 +110,107 @@ word-break:break-word;
 </div>
 
 
-
 <script>
-
 
 async function generate(){
 
+let input = document.getElementById("input").value;
 
-let input=document.getElementById("input").value;
+let result = document.getElementById("result");
 
 
 if(!input.trim()){
 
-document.getElementById("result").innerText=
-"اكتب طلبك أولاً";
-
+result.innerText="اكتب طلبك أولاً";
 return;
 
 }
 
 
-
-document.getElementById("result").innerText=
-"جاري المعالجة...";
-
+result.innerText="جاري المعالجة...";
 
 
 try{
 
 
-let response=await fetch("/api/generate",{
+let response = await fetch("/api/generate",{
 
 method:"POST",
 
 headers:{
-
 "Content-Type":"application/json"
-
 },
 
 body:JSON.stringify({
-
 input:input
-
 })
 
 });
 
 
-
-let data=await response.json();
-
+let data = await response.json();
 
 
-let output = data.result;
+if(data.error){
 
-if (typeof output === "string") {
+result.innerText=data.error;
+return;
 
-document.getElementById("result").innerText = output;
-
-} else {
-
-let text = "";
-
-if(output.title){
-text += output.title + "\n\n";
 }
 
-if(output.sections){
 
-output.sections.forEach(section=>{
+// معالجة كل أنواع الردود
+
+if(typeof data.result === "string"){
+
+result.innerText=data.result;
+
+}
+
+else if(typeof data.result === "object"){
+
+let text="";
+
+
+if(data.result.title){
+
+text += data.result.title + "\n\n";
+
+}
+
+
+if(data.result.sections){
+
+data.result.sections.forEach(section=>{
+
 
 if(section.title){
+
 text += "🔹 " + section.title + "\n";
+
 }
+
 
 if(section.text){
+
 text += section.text + "\n\n";
-}
-
-});
 
 }
 
-document.getElementById("result").innerText = text;
-
-}
-let output = data.result;
-
-if (typeof output === "string") {
-
-document.getElementById("result").innerText = output;
-
-} else {
-
-let text = "";
-
-if(output.title){
-text += output.title + "\n\n";
-}
-
-
-if(output.sections){
-
-output.sections.forEach(section=>{
-
-if(section.title){
-text += "🔹 " + section.title + "\n";
-}
-
-if(section.text){
-text += section.text + "\n\n";
-}
 
 });
 
 }
 
 
-document.getElementById("result").innerText = text;
+result.innerText = text || JSON.stringify(data.result,null,2);
+
 
 }
+
+else{
+
+result.innerText="لا توجد نتيجة";
 
 }
 
@@ -274,8 +219,7 @@ document.getElementById("result").innerText = text;
 }catch(error){
 
 
-document.getElementById("result").innerText=
-"حدث خطأ: "+error.message;
+result.innerText="حدث خطأ: " + error.message;
 
 
 }
