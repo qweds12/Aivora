@@ -49,8 +49,8 @@ Aivora AI
 `;
 
 
-  return res.status(200).json({
-    result: result
-  });
+return res.status(200).json({
+  result: String(result)
+});
 
 }
