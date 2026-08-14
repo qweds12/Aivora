@@ -15,153 +15,201 @@ app.use(express.static(path.join(__dirname, "public")));
 
 const tools = {
   video: { name: "Video Studio", cost: 20 },
-    image: { name: "Image Prompt Studio", cost: 5 },
-      social: { name: "Social Studio", cost: 3 },
-        prompt: { name: "Prompt Builder", cost: 2 },
-          cv: { name: "CV Builder", cost: 5 },
-            idea: { name: "Business Ideas", cost: 3 }
-            };
+  image: { name: "Image Prompt Studio", cost: 5 },
+  social: { name: "Social Studio", cost: 3 },
+  prompt: { name: "Prompt Builder", cost: 2 },
+  cv: { name: "CV Builder", cost: 5 },
+  idea: { name: "Business Ideas", cost: 3 }
+};
 
-            function localResult(tool, input, lang) {
-              const labels = {
-                  ar: ["تحليل الطلب", "النتيجة", "خطوات مقترحة"],
-                      en: ["Request analysis", "Result", "Suggested steps"]
-                        }[lang] || ["تحليل الطلب", "النتيجة", "خطوات مقترحة"];
+function localResult(tool, input, lang) {
+  const labels = {
+    ar: ["تحليل الطلب", "النتيجة", "خطوات مقترحة"],
+    en: ["Request analysis", "Result", "Suggested steps"]
+  }[lang] || ["تحليل الطلب", "النتيجة", "خطوات مقترحة"];
 
-                          const name = tools[tool]?.name || "AI Studio";
+  const name = tools[tool]?.name || "AI Studio";
 
-                            return {
-                                title: name,
-                                    sections: [
-                                          { title: labels[0], text: `تم تحليل طلبك: ${input}` },
-                                                {
-                                                        title: labels[1],
-                                                                text: "هذه نتيجة MVP جاهزة كنقطة بداية. عند إضافة مفتاح مزود الذكاء الاصطناعي في الخادم، سيتم استبدالها بإجابة AI حقيقية."
-                                                                      },
-                                                                            {
-                                                                                    title: labels[2],
-                                                                                            text: "حدد الجمهور والهدف والأسلوب، ثم راجع النتيجة قبل النشر."
-                                                                                                  }
-                                                                                                      ]
-                                                                                                        };
-                                                                                                        }
+  return {
+    title: name,
+    sections: [
+      {
+        title: labels[0],
+        text: `تم تحليل طلبك: ${input}`
+      },
+      {
+        title: labels[1],
+        text: "هذه نتيجة تجريبية. لم يتم الاتصال بمحرك Gemini."
+      },
+      {
+        title: labels[2],
+        text: "تحقق من إعداد GEMINI_API_KEY ثم أعد المحاولة."
+      }
+    ]
+  };
+}
 
-                                                                                                        app.get("/api/health", (req, res) => {
-                                                                                                          res.json({
-                                                                                                              ok: true,
-                                                                                                                  service: "Aivora AI",
-                                                                                                                      version: "1.0.0"
-                                                                                                                        });
-                                                                                                                        });
+app.get("/api/health", (req, res) => {
+  res.json({
+    ok: true,
+    service: "Aivora AI",
+    version: "2.0.0",
+    geminiConfigured: Boolean(process.env.GEMINI_API_KEY)
+  });
+});
 
-                                                                                                                        app.get("/api/tools", (req, res) => {
-                                                                                                                          res.json(tools);
-                                                                                                                          });
+app.get("/api/tools", (req, res) => {
+  res.json(tools);
+});
 
-                                                                                                                          app.post("/api/generate", async (req, res) => {
-                                                                                                                            const {
-                                                                                                                                tool = "prompt",
-                                                                                                                                    input = "",
-                                                                                                                                        language = "ar"
-                                                                                                                                          } = req.body || {};
+app.post("/api/generate", async (req, res) => {
+  const {
+    tool = "prompt",
+    input = "",
+    language = "ar"
+  } = req.body || {};
 
-                                                                                                                                            if (!input.trim()) {
-                                                                                                                                                return res.status(400).json({
-                                                                                                                                                      error: "اكتب طلبك أولاً"
-                                                                                                                                                          });
-                                                                                                                                                            }
+  if (!input.trim()) {
+    return res.status(400).json({
+      error: "اكتب طلبك أولاً"
+    });
+  }
 
-                                                                                                                                                              if (!process.env.AI_API_KEY) {
-                                                                                                                                                                  return res.json({
-                                                                                                                                                                        mode: "demo",
-                                                                                                                                                                              credits: tools[tool]?.cost || 2,
-                                                                                                                                                                                    result: localResult(tool, input, language)
-                                                                                                                                                                                        });
-                                                                                                                                                                                          }
+  const apiKey = process.env.GEMINI_API_KEY;
 
-                                                                                                                                                                                            try {
-                                                                                                                                                                                                const base = (process.env.AI_BASE_URL || "").replace(/\/$/, "");
-                                                                                                                                                                                                    const url = base ? `${base}/chat/completions` : "";
+  // إذا لم يوجد مفتاح Gemini، يبقى الموقع يعمل بوضع تجريبي
+  if (!apiKey) {
+    return res.json({
+      mode: "demo",
+      credits: tools[tool]?.cost || 2,
+      result: localResult(tool, input, language)
+    });
+  }
 
-                                                                                                                                                                                                        if (!url) {
-                                                                                                                                                                                                              return res.json({
-                                                                                                                                                                                                                      mode: "demo",
-                                                                                                                                                                                                                              credits: tools[tool]?.cost || 2,
-                                                                                                                                                                                                                                      result: localResult(tool, input, language)
-                                                                                                                                                                                                                                            });
-                                                                                                                                                                                                                                                }
+  try {
+    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
-                                                                                                                                                                                                                                                    const r = await fetch(url, {
-                                                                                                                                                                                                                                                          method: "POST",
-                                                                                                                                                                                                                                                                headers: {
-                                                                                                                                                                                                                                                                        "Content-Type": "application/json",
-                                                                                                                                                                                                                                                                                Authorization: `Bearer ${process.env.AI_API_KEY}`
-                                                                                                                                                                                                                                                                                      },
-                                                                                                                                                                                                                                                                                            body: JSON.stringify({
-                                                                                                                                                                                                                                                                                                    model: process.env.AI_MODEL || "gpt-4o-mini",
-                                                                                                                                                                                                                                                                                                            messages: [
-                                                                                                                                                                                                                                                                                                                      {
-                                                                                                                                                                                                                                                                                                                                  role: "system",
-                                                                                                                                                                                                                                                                                                                                              content: "You are Aivora AI, a concise professional assistant. Return useful structured output."
-                                                                                                                                                                                                                                                                                                                                                        },
-                                                                                                                                                                                                                                                                                                                                                                  {
-                                                                                                                                                                                                                                                                                                                                                                              role: "user",
-                                                                                                                                                                                                                                                                                                                                                                                          content: `Tool: ${tools[tool]?.name || tool}\nLanguage: ${language}\nRequest: ${input}`
-                                                                                                                                                                                                                                                                                                                                                                                                    }
-                                                                                                                                                                                                                                                                                                                                                                                                            ],
-                                                                                                                                                                                                                                                                                                                                                                                                                    temperature: 0.7
-                                                                                                                                                                                                                                                                                                                                                                                                                          })
-                                                                                                                                                                                                                                                                                                                                                                                                                              });
+    const url =
+      `https://generativelanguage.googleapis.com/v1beta/models/` +
+      `${encodeURIComponent(model)}:generateContent`;
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                  if (!r.ok) {
-                                                                                                                                                                                                                                                                                                                                                                                                                                        throw new Error(`AI provider error ${r.status}`);
-                                                                                                                                                                                                                                                                                                                                                                                                                                            }
+    const systemPrompt = `
+You are Aivora AI, a professional Arabic-first AI assistant.
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                const data = await r.json();
+Selected tool:
+${tools[tool]?.name || tool}
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                    const text =
-                                                                                                                                                                                                                                                                                                                                                                                                                                                          data.choices?.[0]?.message?.content || "No result";
+Requested language:
+${language}
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                              res.json({
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                    mode: "live",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                          credits: tools[tool]?.cost || 2,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                result: {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        title: tools[tool]?.name || tool,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                sections: [
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      title: "AI",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  text
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              });
+User request:
+${input}
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                } catch (e) {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    res.status(502).json({
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          error: "تعذر الاتصال بمحرك AI حالياً",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                detail: e.message
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    });
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      });
+Instructions:
+- Give a useful and practical answer.
+- If the requested language is Arabic, answer in clear Arabic.
+- Do not mention API keys.
+- Do not mention internal server implementation.
+- Be accurate and concise.
+`;
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      app.post("/api/checkout", (req, res) => {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        if (!process.env.STRIPE_SECRET_KEY) {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            return res.json({
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  mode: "demo",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        message: "أضف STRIPE_SECRET_KEY لتفعيل الدفع الحقيقي."
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            });
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              }
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey
+      },
+      body: JSON.stringify({
+        system_instruction: {
+          parts: [
+            {
+              text: systemPrompt
+            }
+          ]
+        },
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text: input
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048
+        }
+      })
+    });
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                res.json({
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    mode: "stripe-ready",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        message: "مفتاح Stripe موجود. اربط إنشاء Checkout Session وWebhook في مرحلة الإنتاج."
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          });
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          });
+    const data = await response.json();
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          app.get(/.*/, (req, res) => {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            res.sendFile(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                path.join(__dirname, "public", "index.html")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  );
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  });
+    if (!response.ok) {
+      console.error("Gemini API error:", data);
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  export default app;
+      return res.status(response.status).json({
+        error: "حدث خطأ من Gemini",
+        detail: data?.error?.message || "Gemini API error"
+      });
+    }
+
+    const text = data?.candidates?.[0]?.content?.parts
+      ?.map(part => part?.text || "")
+      .join("\n")
+      .trim();
+
+    if (!text) {
+      return res.status(502).json({
+        error: "لم تُرجع Gemini نتيجة نصية"
+      });
+    }
+
+    return res.json({
+      mode: "live",
+      provider: "Gemini",
+      model,
+      credits: tools[tool]?.cost || 2,
+      result: {
+        title: tools[tool]?.name || tool,
+        sections: [
+          {
+            title: "Aivora AI",
+            text
+          }
+        ]
+      }
+    });
+
+  } catch (error) {
+    console.error("Server Gemini error:", error);
+
+    return res.status(502).json({
+      error: "تعذر الاتصال بـ Gemini حالياً",
+      detail: error.message
+    });
+  }
+});
+
+app.post("/api/checkout", (req, res) => {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return res.json({
+      mode: "demo",
+      message: "الدفع غير مفعل حالياً."
+    });
+  }
+
+  return res.json({
+    mode: "stripe-ready",
+    message: "Stripe جاهز للربط بمرحلة الدفع."
+  });
+});
+
+app.get(/.*/, (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "public", "index.html")
+  );
+});
+
+export default app;
