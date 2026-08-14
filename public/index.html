@@ -7,53 +7,59 @@
 <title>Aivora AI</title>
 
 <style>
-body{
+body {
     margin:0;
-    font-family: Arial, sans-serif;
-    background:#0f172a;
+    padding:20px;
+    background:#0d172d;
     color:white;
+    font-family:Arial, sans-serif;
     text-align:center;
 }
 
-.container{
-    padding:50px 20px;
-}
-
-h1{
+h1 {
     font-size:55px;
     color:#38bdf8;
+    margin-top:30px;
 }
 
-p{
-    font-size:28px;
+h2 {
+    font-size:35px;
+    line-height:1.8;
+    margin:40px 0;
 }
 
-textarea{
-    width:85%;
+.container {
+    max-width:600px;
+    margin:auto;
+}
+
+textarea {
+    width:90%;
     height:250px;
-    border-radius:25px;
-    padding:20px;
-    font-size:22px;
+    border-radius:30px;
     border:none;
-    margin-top:30px;
+    padding:25px;
+    font-size:25px;
+    text-align:right;
 }
 
-button{
-    margin-top:30px;
-    padding:20px 70px;
-    border:none;
-    border-radius:40px;
+button {
+    margin-top:40px;
     background:#38bdf8;
-    font-size:25px;
+    border:none;
+    border-radius:50px;
+    padding:25px 80px;
+    font-size:30px;
     cursor:pointer;
 }
 
-#result{
-    margin-top:40px;
+#result {
+    margin-top:50px;
     background:#1e293b;
+    border-radius:30px;
     padding:30px;
-    border-radius:25px;
-    font-size:22px;
+    font-size:25px;
+    min-height:80px;
 }
 </style>
 
@@ -65,9 +71,10 @@ button{
 
 <h1>Aivora AI 🚀</h1>
 
-<p>
-منصة الذكاء الاصطناعي لصناعة الأفكار والمحتوى
-</p>
+<h2>
+منصة الذكاء الاصطناعي لصناعة<br>
+الأفكار والمحتوى
+</h2>
 
 
 <textarea id="input" placeholder="اكتب طلبك هنا..."></textarea>
@@ -94,14 +101,10 @@ async function generate(){
 
 let input = document.getElementById("input").value;
 
-
-if(!input.trim()){
-
+if(!input){
 document.getElementById("result").innerHTML =
 "اكتب طلبك أولاً";
-
 return;
-
 }
 
 
@@ -109,10 +112,9 @@ document.getElementById("result").innerHTML =
 "جاري المعالجة...";
 
 
-try{
+try {
 
-
-let response = await fetch("/api/generate",{
+let response = await fetch("/api/generate", {
 
 method:"POST",
 
@@ -120,10 +122,8 @@ headers:{
 "Content-Type":"application/json"
 },
 
-body: JSON.stringify({
-
-input: input
-
+body:JSON.stringify({
+input:input
 })
 
 });
@@ -132,8 +132,9 @@ input: input
 let data = await response.json();
 
 
+// هنا التعديل المهم
 document.getElementById("result").innerHTML =
-data.result || data.error;
+data.result;
 
 
 }
@@ -141,7 +142,7 @@ data.result || data.error;
 catch(error){
 
 document.getElementById("result").innerHTML =
-"حدث خطأ في الاتصال";
+"حدث خطأ: "+error;
 
 }
 
