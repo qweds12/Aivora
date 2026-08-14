@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -14,39 +15,64 @@ box-sizing:border-box;
 }
 
 body{
+
 margin:0;
 padding:12px;
+
 background:#0d172d;
+
 color:white;
+
 font-family:Arial,sans-serif;
+
 text-align:center;
+
 overflow-x:hidden;
+
 }
+
 
 .container{
+
 width:100%;
+
 max-width:520px;
+
 margin:auto;
+
 }
+
 
 h1{
+
 font-size:34px;
+
 color:#38bdf8;
+
 margin:15px 0;
+
 }
 
+
 h2{
+
 font-size:22px;
+
 line-height:1.6;
+
 margin:15px 0 25px;
+
 }
+
 
 textarea{
 
 width:100%;
+
 height:160px;
 
 border-radius:22px;
+
 border:none;
 
 padding:18px;
@@ -138,26 +164,21 @@ word-break:break-word;
 </div>
 
 
-
 <script>
 
 
 async function generate(){
 
 
-const input =
-document.getElementById("input").value;
+const input = document.getElementById("input").value;
 
-
-const result =
-document.getElementById("result");
+const result = document.getElementById("result");
 
 
 
 if(!input.trim()){
 
-result.innerText =
-"اكتب طلبك أولاً";
+result.innerText = "اكتب طلبك أولاً";
 
 return;
 
@@ -165,8 +186,7 @@ return;
 
 
 
-result.innerText =
-"جاري المعالجة...";
+result.innerText = "جاري المعالجة...";
 
 
 
@@ -175,19 +195,27 @@ try{
 
 const response = await fetch("/api/generate",{
 
+
 method:"POST",
+
 
 headers:{
 
+
 "Content-Type":"application/json"
+
 
 },
 
+
 body:JSON.stringify({
+
 
 input:input
 
+
 })
+
 
 });
 
@@ -199,25 +227,36 @@ const data = await response.json();
 
 if(data.result){
 
+
 result.innerText = data.result;
 
-}else if(data.error){
+
+}
+
+else if(data.error){
+
 
 result.innerText = data.error;
 
-}else{
+
+}
+
+else{
+
 
 result.innerText = "لا يوجد رد";
 
 
+}
 
 
 
-}catch(error){
+}
+
+catch(error){
 
 
-result.innerText =
-"حدث خطأ: " + error.message;
+result.innerText = "حدث خطأ: " + error.message;
 
 
 }
