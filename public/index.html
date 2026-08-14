@@ -199,47 +199,7 @@ const data = await response.json();
 
 if(data.result){
 
-if(typeof data.result === "string"){
-
-try{
-
-const json = JSON.parse(data.result);
-
-let text = "";
-
-if(json.title){
-text += json.title + "\n\n";
-}
-
-if(json.sections){
-
-json.sections.forEach(section=>{
-
-if(section.title){
-text += "🔹 " + section.title + "\n";
-}
-
-if(section.text){
-text += section.text + "\n\n";
-}
-
-});
-
-}
-
-result.innerText = text || data.result;
-
-}catch{
-
 result.innerText = data.result;
-
-}
-
-}else{
-
-result.innerText = JSON.stringify(data.result, null, 2);
-
-}
 
 }else if(data.error){
 
@@ -249,7 +209,7 @@ result.innerText = data.error;
 
 result.innerText = "لا يوجد رد";
 
-}
+
 
 
 
