@@ -103,6 +103,7 @@ let input = document.getElementById("input").value;
 
 if(!input){
 document.getElementById("result").innerHTML =
+JSON.stringify(data, null, 2);
 "اكتب طلبك أولاً";
 return;
 }
