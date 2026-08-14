@@ -1,236 +1,1108 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1224">
+  <title>Aivora AI — منصة الذكاء الاصطناعي</title>
 
-<title>Aivora AI</title>
+  <style>
+    :root {
+      --bg: #0b1224;
+      --panel: #172238;
+      --panel-2: #111a2e;
+      --text: #f8fafc;
+      --muted: #9aa8bf;
+      --accent: #38bdf8;
+      --accent-2: #0ea5e9;
+      --border: rgba(255,255,255,.08);
+      --success: #34d399;
+      --danger: #fb7185;
+    }
 
-<style>
+    * {
+      box-sizing: border-box;
+    }
 
-*{
-box-sizing:border-box;
-}
+    html {
+      scroll-behavior: smooth;
+    }
 
-body{
-margin:0;
-padding:12px;
-background:#0d172d;
-color:white;
-font-family:Arial,sans-serif;
-text-align:center;
-overflow-x:hidden;
-}
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 18px 12px 40px;
+      background:
+        radial-gradient(
+          circle at 50% -10%,
+          #18335b 0,
+          #0b1224 42%,
+          #070d1b 100%
+        );
+      color: var(--text);
+      font-family: Arial, "Noto Sans Arabic", sans-serif;
+    }
 
-.container{
-width:100%;
-max-width:520px;
-margin:auto;
-}
+    button,
+    textarea,
+    select {
+      font: inherit;
+    }
 
-h1{
-font-size:34px;
-color:#38bdf8;
-margin:15px 0;
-}
+    .container {
+      width: 100%;
+      max-width: 620px;
+      margin: auto;
+    }
 
-h2{
-font-size:22px;
-line-height:1.6;
-margin:15px 0 25px;
-}
+    /* Header */
 
-textarea{
-width:100%;
-height:160px;
-border-radius:22px;
-border:none;
-padding:18px;
-font-size:18px;
-resize:none;
-text-align:right;
-}
+    .header {
+      padding: 8px 8px 20px;
+      text-align: center;
+    }
 
-button{
-margin-top:20px;
-background:#38bdf8;
-border:none;
-border-radius:50px;
-padding:15px 55px;
-font-size:22px;
-cursor:pointer;
-}
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 30px;
+    }
 
-#result{
-margin-top:25px;
-background:#1e293b;
-border-radius:22px;
-padding:20px;
-font-size:17px;
-line-height:1.8;
-min-height:100px;
-white-space:pre-wrap;
-word-break:break-word;
-}
+    .logo-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 18px rgba(56,189,248,.8);
+    }
 
-</style>
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+    }
 
+    /* Main Card */
+
+    .card {
+      background: rgba(23,34,56,.94);
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      padding: 18px;
+      box-shadow: 0 18px 55px rgba(0,0,0,.25);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Controls */
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 12px;
+      outline: none;
+    }
+
+    select:focus {
+      border-color: rgba(56,189,248,.65);
+    }
+
+    /* Textarea */
+
+    textarea {
+      width: 100%;
+      height: 190px;
+      min-height: 150px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      color: #111827;
+      padding: 18px;
+      font-size: 18px;
+      line-height: 1.8;
+      resize: vertical;
+      outline: none;
+      transition: .2s;
+    }
+
+    textarea:focus {
+      border-color: rgba(56,189,248,.65);
+      box-shadow: 0 0 0 3px rgba(56,189,248,.12);
+    }
+
+    /* Buttons */
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .primary,
+    .secondary {
+      border-radius: 999px;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .primary {
+      border: 0;
+      background: linear-gradient(
+        135deg,
+        var(--accent),
+        var(--accent-2)
+      );
+      color: #062033;
+      font-weight: 800;
+      min-width: 170px;
+      padding: 14px 30px;
+      box-shadow: 0 10px 28px rgba(14,165,233,.2);
+    }
+
+    .primary:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .primary:disabled {
+      opacity: .65;
+      cursor: wait;
+      transform: none;
+    }
+
+    .secondary {
+      background: #24324a;
+      color: #dbeafe;
+      border: 1px solid var(--border);
+      padding: 11px 18px;
+    }
+
+    .secondary:hover {
+      background: #2d3d59;
+    }
+
+    .status {
+      min-height: 22px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    /* Result */
+
+    .result-card {
+      margin-top: 16px;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .result-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 15px 17px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(15,23,42,.45);
+    }
+
+    .result-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #e0f2fe;
+    }
+
+    .badge {
+      font-size: 12px;
+      color: #bbf7d0;
+      background: rgba(52,211,153,.12);
+      border: 1px solid rgba(52,211,153,.2);
+      padding: 5px 9px;
+      border-radius: 999px;
+    }
+
+    .result-body {
+      padding: 18px;
+      text-align: right;
+      line-height: 1.9;
+      font-size: 17px;
+      word-break: break-word;
+    }
+
+    .result-body.empty {
+      color: var(--muted);
+      text-align: center;
+      padding: 35px 18px;
+    }
+
+    .result-body h2,
+    .result-body h3 {
+      color: #7dd3fc;
+      margin: 20px 0 8px;
+      line-height: 1.5;
+    }
+
+    .result-body h2 {
+      font-size: 20px;
+    }
+
+    .result-body h3 {
+      font-size: 18px;
+    }
+
+    .result-body p {
+      margin: 8px 0;
+    }
+
+    .result-body ul,
+    .result-body ol {
+      margin: 8px 0;
+      padding-right: 24px;
+    }
+
+    .result-body li {
+      margin: 5px 0;
+    }
+
+    .result-body strong {
+      color: #fff;
+    }
+
+    .result-body code {
+      direction: ltr;
+      display: inline-block;
+      background: #0b1224;
+      color: #bae6fd;
+      padding: 2px 7px;
+      border-radius: 7px;
+      font-family: monospace;
+    }
+
+    .result-body pre {
+      direction: ltr;
+      text-align: left;
+      overflow: auto;
+      background: #0b1224;
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: 14px;
+      white-space: pre-wrap;
+    }
+
+    .result-body blockquote {
+      margin: 12px 0;
+      padding: 8px 14px;
+      border-right: 3px solid var(--accent);
+      background: rgba(56,189,248,.06);
+      color: #cbd5e1;
+    }
+
+    .copy-row {
+      display: flex;
+      justify-content: flex-start;
+      padding: 0 17px 15px;
+    }
+
+    .copy-btn {
+      display: none;
+      background: #24324a;
+      color: #e2e8f0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .copy-btn.show {
+      display: block;
+    }
+
+    /* Footer */
+
+    .footer {
+      text-align: center;
+      color: #64748b;
+      font-size: 12px;
+      margin-top: 18px;
+    }
+
+    /* Mobile */
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px 10px 28px;
+      }
+
+      .card {
+        padding: 14px;
+        border-radius: 22px;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .logo {
+        font-size: 27px;
+      }
+
+      textarea {
+        font-size: 17px;
+      }
+
+      .primary {
+        width: 100%;
+      }
+
+      .secondary {
+        flex: 1;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
 <div class="container">
 
-<h1>🚀 Aivora AI</h1>
+  <!-- Header -->
 
-<h2>
-منصة الذكاء الاصطناعي لصناعة<br>
-الأفكار والمحتوى
-</h2>
+  <header class="header">
+    <div class="logo">
+      <span class="logo-dot"></span>
+      Aivora AI
+    </div>
 
-<textarea id="input" placeholder="اكتب طلبك هنا..."></textarea>
+    <div class="subtitle">
+      منصة ذكية لصناعة الأفكار والمحتوى باستخدام الذكاء الاصطناعي
+    </div>
+  </header>
 
-<button onclick="generate()">
-إنشاء
-</button>
 
-<div id="result">
-النتيجة ستظهر هنا
-</div>
+  <!-- Main -->
+
+  <main class="card">
+
+    <!-- Tools -->
+
+    <div class="controls">
+
+      <div class="field">
+        <label for="tool">الأداة</label>
+
+        <select id="tool">
+
+          <option value="prompt">
+            Prompt Builder — بناء البرومبت
+          </option>
+
+          <option value="idea">
+            Business Ideas — أفكار مشاريع
+          </option>
+
+          <option value="social">
+            Social Studio — محتوى اجتماعي
+          </option>
+
+          <option value="image">
+            Image Prompt Studio — برومبت الصور
+          </option>
+
+          <option value="video">
+            Video Studio — برومبت الفيديو
+          </option>
+
+          <option value="cv">
+            CV Builder — السيرة الذاتية
+          </option>
+
+        </select>
+      </div>
+
+
+      <div class="field">
+
+        <label for="language">
+          لغة النتيجة
+        </label>
+
+        <select id="language">
+
+          <option value="ar">
+            العربية
+          </option>
+
+          <option value="en">
+            English
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <!-- Input -->
+
+    <textarea
+      id="input"
+      maxlength="12000"
+      placeholder="اكتب طلبك هنا... مثال: أنشئ لي فكرة تطبيق ذكاء اصطناعي لصناعة الفيديو"
+    ></textarea>
+
+
+    <!-- Actions -->
+
+    <div class="actions">
+
+      <button
+        class="primary"
+        id="generateBtn"
+        onclick="generate()"
+      >
+        إنشاء
+      </button>
+
+      <button
+        class="secondary"
+        onclick="clearAll()"
+      >
+        مسح
+      </button>
+
+    </div>
+
+
+    <!-- Status -->
+
+    <div
+      class="status"
+      id="status"
+    ></div>
+
+
+    <!-- Result -->
+
+    <section
+      class="card result-card"
+      aria-live="polite"
+    >
+
+      <div class="result-head">
+
+        <div
+          class="result-title"
+          id="resultTitle"
+        >
+          النتيجة
+        </div>
+
+        <div
+          class="badge"
+          id="modeBadge"
+          style="display:none"
+        ></div>
+
+      </div>
+
+
+      <div
+        class="result-body empty"
+        id="result"
+      >
+        ستظهر نتيجة الذكاء الاصطناعي هنا
+      </div>
+
+
+      <div class="copy-row">
+
+        <button
+          class="copy-btn"
+          id="copyBtn"
+          onclick="copyResult()"
+        >
+          نسخ النتيجة
+        </button>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <div class="footer">
+    Aivora AI · نسخة تجريبية متصلة بمحرك Gemini
+  </div>
 
 </div>
 
 
 <script>
 
-async function generate(){
-
-const input = document.getElementById("input").value;
-const result = document.getElementById("result");
+let lastPlainText = "";
 
 
-if(!input.trim()){
+/* Escape HTML */
 
-result.innerText="اكتب طلبك أولاً";
-return;
+function escapeHtml(value) {
 
-}
-
-
-result.innerText="جاري المعالجة...";
-
-
-try{
-
-
-const response = await fetch("/api/generate",{
-
-method:"POST",
-
-headers:{
-
-"Content-Type":"application/json"
-
-},
-
-body:JSON.stringify({
-
-input:input
-
-})
-
-});
-
-
-const data = await response.json();
-
-
-if(data.result){
-
-
-let output=data.result;
-
-
-if(typeof output==="object"){
-
-
-let text="";
-
-
-if(output.title){
-
-text+=output.title+"\n\n";
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 
 }
 
 
-if(output.sections){
+/* Markdown Renderer */
+
+function renderMarkdown(source) {
+
+  let text = escapeHtml(source)
+    .replace(/\r\n/g, "\n")
+    .trim();
+
+  if (!text) {
+    return "";
+  }
 
 
-output.sections.forEach(section=>{
+  const codeBlocks = [];
 
 
-if(section.title){
+  text = text.replace(
+    /```([\s\S]*?)```/g,
+    (_, code) => {
 
-text+="🔹 "+section.title+"\n";
+      const key =
+        `@@CODE${codeBlocks.length}@@`;
+
+      codeBlocks.push(
+        `<pre>${code.trim()}</pre>`
+      );
+
+      return key;
+
+    }
+  );
+
+
+  text = text
+    .replace(
+      /^###\s+(.+)$/gm,
+      "<h3>$1</h3>"
+    )
+
+    .replace(
+      /^##\s+(.+)$/gm,
+      "<h2>$1</h2>"
+    )
+
+    .replace(
+      /^#\s+(.+)$/gm,
+      "<h2>$1</h2>"
+    )
+
+    .replace(
+      /\*\*\*(.+?)\*\*\*/g,
+      "<strong><em>$1</em></strong>"
+    )
+
+    .replace(
+      /\*\*(.+?)\*\*/g,
+      "<strong>$1</strong>"
+    )
+
+    .replace(
+      /__(.+?)__/g,
+      "<strong>$1</strong>"
+    )
+
+    .replace(
+      /`([^`\n]+)`/g,
+      "<code>$1</code>"
+    )
+
+    .replace(
+      /^>\s?(.+)$/gm,
+      "<blockquote>$1</blockquote>"
+    )
+
+    .replace(
+      /^[-*]\s+(.+)$/gm,
+      "<li>$1</li>"
+    )
+
+    .replace(
+      /^\d+\.\s+(.+)$/gm,
+      "<li>$1</li>"
+    );
+
+
+  text = text.replace(
+    /(?:<li>.*<\/li>\n?)+/g,
+    block => `<ul>${block}</ul>`
+  );
+
+
+  text = text
+    .split(/\n{2,}/)
+    .map(part => {
+
+      const trimmed = part.trim();
+
+      if (!trimmed) {
+        return "";
+      }
+
+      if (
+        /^<(h2|h3|ul|pre|blockquote)/
+          .test(trimmed)
+      ) {
+        return trimmed;
+      }
+
+      return `
+        <p>
+          ${trimmed.replace(/\n/g, "<br>")}
+        </p>
+      `;
+
+    })
+    .join("");
+
+
+  codeBlocks.forEach(
+    (block, index) => {
+
+      text = text.replace(
+        `@@CODE${index}@@`,
+        block
+      );
+
+    }
+  );
+
+
+  return text;
 
 }
 
 
-if(section.text){
+/* Extract API Result */
 
-text+=section.text+"\n\n";
+function extractText(data) {
+
+  if (!data) {
+    return "";
+  }
+
+
+  if (
+    typeof data.result === "string"
+  ) {
+
+    return data.result;
+
+  }
+
+
+  if (
+    data.result &&
+    data.result.sections
+  ) {
+
+    return data.result.sections
+      .map(section => {
+
+        return (
+          (section.title
+            ? section.title + "\n"
+            : "") +
+          (section.text || "")
+        );
+
+      })
+      .join("\n\n");
+
+  }
+
+
+  if (data.result) {
+
+    return JSON.stringify(
+      data.result,
+      null,
+      2
+    );
+
+  }
+
+
+  return "";
 
 }
 
 
-});
+/* Generate */
 
+async function generate() {
+
+  const input =
+    document
+      .getElementById("input")
+      .value
+      .trim();
+
+  const tool =
+    document
+      .getElementById("tool")
+      .value;
+
+  const language =
+    document
+      .getElementById("language")
+      .value;
+
+  const result =
+    document
+      .getElementById("result");
+
+  const btn =
+    document
+      .getElementById("generateBtn");
+
+  const status =
+    document
+      .getElementById("status");
+
+  const badge =
+    document
+      .getElementById("modeBadge");
+
+  const copyBtn =
+    document
+      .getElementById("copyBtn");
+
+  const title =
+    document
+      .getElementById("resultTitle");
+
+
+  if (!input) {
+
+    result.className =
+      "result-body empty";
+
+    result.textContent =
+      "اكتب طلبك أولاً";
+
+    copyBtn.classList.remove("show");
+
+    return;
+
+  }
+
+
+  /* Loading */
+
+  btn.disabled = true;
+
+  btn.textContent =
+    "جاري الإنشاء...";
+
+  status.textContent =
+    "جاري إرسال الطلب إلى Aivora AI...";
+
+  result.className =
+    "result-body empty";
+
+  result.textContent =
+    "جاري التفكير وإنشاء النتيجة...";
+
+  badge.style.display =
+    "none";
+
+  copyBtn.classList.remove(
+    "show"
+  );
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/generate",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            input,
+            tool,
+            language
+          })
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (
+      !response.ok ||
+      data.error
+    ) {
+
+      throw new Error(
+        data.error ||
+        "تعذر إنشاء النتيجة"
+      );
+
+    }
+
+
+    const text =
+      extractText(data);
+
+
+    lastPlainText = text;
+
+
+    title.textContent =
+      data.result?.title ||
+      "النتيجة";
+
+
+    result.className =
+      "result-body";
+
+
+    result.innerHTML =
+      renderMarkdown(text) ||
+      "لا توجد نتيجة";
+
+
+    /* Mode */
+
+    if (data.mode) {
+
+      if (
+        data.mode === "gemini" ||
+        data.mode === "live"
+      ) {
+
+        badge.textContent =
+          "Gemini AI";
+
+      } else {
+
+        badge.textContent =
+          "Demo";
+
+      }
+
+      badge.style.display =
+        "block";
+
+    }
+
+
+    copyBtn.classList.add(
+      "show"
+    );
+
+
+    if (data.credits) {
+
+      status.textContent =
+        `تم الإنشاء · التكلفة: ${data.credits} Credits`;
+
+    } else {
+
+      status.textContent =
+        "تم الإنشاء بنجاح";
+
+    }
+
+  }
+
+
+  catch (error) {
+
+    result.className =
+      "result-body empty";
+
+    result.textContent =
+      error.message ||
+      "حدث خطأ غير متوقع";
+
+    status.textContent =
+      "تعذر إكمال الطلب";
+
+  }
+
+
+  finally {
+
+    btn.disabled = false;
+
+    btn.textContent =
+      "إنشاء";
+
+  }
 
 }
 
 
-result.innerText=text || JSON.stringify(output,null,2);
+/* Copy */
+
+async function copyResult() {
+
+  if (!lastPlainText) {
+    return;
+  }
 
 
-}else{
+  try {
+
+    await navigator
+      .clipboard
+      .writeText(
+        lastPlainText
+      );
 
 
-result.innerText=output;
+    document
+      .getElementById("status")
+      .textContent =
+      "تم نسخ النتيجة ✅";
 
+  }
+
+  catch {
+
+    document
+      .getElementById("status")
+      .textContent =
+      "تعذر النسخ تلقائياً";
+
+  }
+
+}
+
+
+/* Clear */
+
+function clearAll() {
+
+  document
+    .getElementById("input")
+    .value = "";
+
+
+  document
+    .getElementById("result")
+    .className =
+    "result-body empty";
+
+
+  document
+    .getElementById("result")
+    .textContent =
+    "ستظهر نتيجة الذكاء الاصطناعي هنا";
+
+
+  document
+    .getElementById("resultTitle")
+    .textContent =
+    "النتيجة";
+
+
+  document
+    .getElementById("modeBadge")
+    .style.display =
+    "none";
+
+
+  document
+    .getElementById("copyBtn")
+    .classList.remove(
+      "show"
+    );
+
+
+  document
+    .getElementById("status")
+    .textContent =
+    "";
+
+
+  lastPlainText = "";
 
 }
 
 
-}else if(data.error){
+/* Ctrl + Enter */
 
+document
+  .getElementById("input")
+  .addEventListener(
+    "keydown",
+    event => {
 
-result.innerText=data.error;
+      if (
+        (event.ctrlKey ||
+         event.metaKey) &&
+        event.key === "Enter"
+      ) {
 
+        generate();
 
-}else{
+      }
 
-
-result.innerText="لا يوجد رد";
-
-
-}
-
-
-}catch(error){
-
-
-result.innerText="حدث خطأ: "+error.message;
-
-
-}
-
-
-}
+    }
+  );
 
 </script>
 
 </body>
-
 </html>
