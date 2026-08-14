@@ -7,130 +7,149 @@
 <title>Aivora AI</title>
 
 <style>
-body {
+body{
     margin:0;
-        font-family: Arial, sans-serif;
-            background:#0f172a;
-                color:white;
-                    text-align:center;
-                    }
+    font-family: Arial, sans-serif;
+    background:#0f172a;
+    color:white;
+    text-align:center;
+}
 
-                    .container {
-                        max-width:700px;
-                            margin:60px auto;
-                                padding:30px;
-                                }
+.container{
+    padding:50px 20px;
+}
 
-                                h1 {
-                                    font-size:40px;
-                                        color:#38bdf8;
-                                        }
+h1{
+    font-size:55px;
+    color:#38bdf8;
+}
 
-                                        p {
-                                            font-size:20px;
-                                            }
+p{
+    font-size:28px;
+}
 
-                                            textarea {
-                                                width:90%;
-                                                    height:150px;
-                                                        padding:15px;
-                                                            border-radius:15px;
-                                                                border:none;
-                                                                    font-size:18px;
-                                                                        margin-top:20px;
-                                                                        }
+textarea{
+    width:85%;
+    height:250px;
+    border-radius:25px;
+    padding:20px;
+    font-size:22px;
+    border:none;
+    margin-top:30px;
+}
 
-                                                                        button {
-                                                                            margin-top:20px;
-                                                                                padding:15px 40px;
-                                                                                    border:none;
-                                                                                        border-radius:30px;
-                                                                                            background:#38bdf8;
-                                                                                                color:#000;
-                                                                                                    font-size:20px;
-                                                                                                        cursor:pointer;
-                                                                                                        }
+button{
+    margin-top:30px;
+    padding:20px 70px;
+    border:none;
+    border-radius:40px;
+    background:#38bdf8;
+    font-size:25px;
+    cursor:pointer;
+}
 
-                                                                                                        button:hover {
-                                                                                                            background:#0ea5e9;
-                                                                                                            }
+#result{
+    margin-top:40px;
+    background:#1e293b;
+    padding:30px;
+    border-radius:25px;
+    font-size:22px;
+}
+</style>
 
-                                                                                                            #result {
-                                                                                                                margin-top:30px;
-                                                                                                                    background:#1e293b;
-                                                                                                                        padding:20px;
-                                                                                                                            border-radius:15px;
-                                                                                                                                min-height:50px;
-                                                                                                                                }
-                                                                                                                                </style>
+</head>
 
-                                                                                                                                </head>
+<body>
 
-                                                                                                                                <body>
+<div class="container">
 
-                                                                                                                                <div class="container">
+<h1>Aivora AI 🚀</h1>
 
-                                                                                                                                <h1>🚀 Aivora AI</h1>
-
-                                                                                                                                <p>منصة الذكاء الاصطناعي لصناعة الأفكار والمحتوى</p>
-
-                                                                                                                                <textarea id="input" placeholder="اكتب طلبك هنا..."></textarea>
-
-                                                                                                                                <br>
-
-                                                                                                                                <button onclick="generate()">إنشاء</button>
-
-                                                                                                                                <div id="result">
-                                                                                                                                النتيجة ستظهر هنا
-                                                                                                                                </div>
-
-                                                                                                                                </div>
+<p>
+منصة الذكاء الاصطناعي لصناعة الأفكار والمحتوى
+</p>
 
 
-                                                                                                                                <script>
-
-                                                                                                                                async function generate(){
-
-                                                                                                                                let input = document.getElementById("input").value;
-
-                                                                                                                                document.getElementById("result").innerHTML =
-                                                                                                                                "جاري المعالجة...";
-
-                                                                                                                                try {
-
-                                                                                                                                let response = await fetch("/api/generate", {
-
-                                                                                                                                method:"POST",
-
-                                                                                                                                headers:{
-                                                                                                                                "Content-Type":"application/json"
-                                                                                                                                },
-
-                                                                                                                                body:JSON.stringify({
-                                                                                                                                prompt:input
-                                                                                                                                })
-
-                                                                                                                                });
+<textarea id="input" placeholder="اكتب طلبك هنا..."></textarea>
 
 
-                                                                                                                                let data = await response.json();
+<br>
 
-                                                                                                                                document.getElementById("result").innerHTML =
-                                                                                                                                data.result || JSON.stringify(data);
-
-                                                                                                                                }
-
-                                                                                                                                catch(error){
-
-                                                                                                                                document.getElementById("result").innerHTML =
-                                                                                                                                "حدث خطأ: " + error;
-
-                                                                                                                                }
-
-                                                                                                                                }
-
-                                                                                                                                </script>
+<button onclick="generate()">
+إنشاء
+</button>
 
 
-                                                                                                                                </body>
-                                                                                                                                </html>
+<div id="result">
+النتيجة ستظهر هنا
+</div>
+
+
+</div>
+
+
+<script>
+
+async function generate(){
+
+let input = document.getElementById("input").value;
+
+
+if(!input.trim()){
+
+document.getElementById("result").innerHTML =
+"اكتب طلبك أولاً";
+
+return;
+
+}
+
+
+document.getElementById("result").innerHTML =
+"جاري المعالجة...";
+
+
+try{
+
+
+let response = await fetch("/api/generate",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body: JSON.stringify({
+
+input: input
+
+})
+
+});
+
+
+let data = await response.json();
+
+
+document.getElementById("result").innerHTML =
+data.result || data.error;
+
+
+}
+
+catch(error){
+
+document.getElementById("result").innerHTML =
+"حدث خطأ في الاتصال";
+
+}
+
+
+}
+
+</script>
+
+
+</body>
+</html>
