@@ -1,54 +1,56 @@
 export default async function handler(req, res) {
 
-if(req.method !== "POST"){
-return res.status(405).json({
-error:"Method not allowed"
-});
-}
+  if (req.method !== "POST") {
+    return res.status(405).json({
+      error: "Method not allowed"
+    });
+  }
 
 
-const {input} = req.body || {};
+  const { input } = req.body || {};
 
 
-if(!input || !input.trim()){
-
-return res.status(400).json({
-error:"اكتب طلبك أولاً"
-});
-
-}
+  if (!input || !input.trim()) {
+    return res.status(400).json({
+      error: "اكتب طلبك أولاً"
+    });
+  }
 
 
+  const result = `
+فكرة التطبيق:
 
-const result = {
-
-title:"فكرة تطبيق ذكاء اصطناعي",
-
-sections:[
-
-{
-title:"تحليل الطلب",
-text:`${input}`
-},
-
-{
-title:"الفكرة",
-text:"تطبيق ذكاء اصطناعي يساعد المستخدم على إنشاء الأفكار والمحتوى بسرعة."
-},
-
-{
-title:"المميزات",
-text:"إنشاء أفكار، كتابة محتوى، تحسين البرومبتات، واقتراح حلول ذكية."
-}
-
-]
-
-};
+${input}
 
 
-return res.status(200).json({
-result:result
-});
+الاسم المقترح:
+Aivora AI
 
+
+الوصف:
+تطبيق ذكاء اصطناعي يساعد المستخدم على تحويل الأفكار إلى مشاريع ومحتوى جاهز.
+
+
+المميزات الأساسية:
+- إنشاء أفكار جديدة.
+- كتابة المحتوى.
+- تطوير المشاريع.
+- إنشاء برومبتات احترافية.
+
+
+خطوات التطوير:
+1- تحديد الجمهور المستهدف.
+2- تصميم واجهة سهلة الاستخدام.
+3- إضافة نموذج ذكاء اصطناعي حقيقي.
+4- تطوير نظام حسابات ومشاريع.
+
+
+هذه نسخة أولية من الفكرة ويمكن تطويرها إلى منصة ذكاء اصطناعي متكاملة.
+`;
+
+
+  return res.status(200).json({
+    result: result
+  });
 
 }
