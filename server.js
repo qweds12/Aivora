@@ -779,9 +779,7 @@ app.post(
 
     try {
 
-const model =
- process.env.GEMINI_MODEL ||
- "gemini-1.5-flash";
+const model = "gemini-2.0-flash";
       const prompt = `
 أنت Aivora AI، مساعد ذكاء اصطناعي احترافي.
 
